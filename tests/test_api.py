@@ -105,7 +105,19 @@ class ApiTests(unittest.TestCase):
         response = self.client.post("/incidents", headers=self.writer, json={"title": "x" * 20_000})
         self.assertEqual(413, response.status_code)
 
+    def test_resolve_response(self):
+        response = self.client.post("/incidents/inc_1/resolve", headers=self.writer,
+                                    json={"resolution_note": "  Restarted the service  "})
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("resolved", response.json["data"]["status"])
+        self.assertEqual("Restarted the service", response.json["data"]["resolution_note"])
+        self.assertEqual("alex", response.json["data"]["resolved_by"])
+
+    def test_resolve_rejects_blank_note(self):
+        response = self.client.post("/incidents/inc_1/resolve", headers=self.writer,
+                                    json={"resolution_note": "   "})
+        self.assertEqual(400, response.status_code)
+
 
 if __name__ == "__main__":
     unittest.main()
-
