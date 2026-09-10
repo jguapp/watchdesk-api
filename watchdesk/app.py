@@ -66,5 +66,8 @@ def create_app():
     def rename_incident(incident_id):
         return {"data": service.rename(g.user, incident_id, read_body()).to_dict()}
 
-    return app
+    @app.post("/incidents/<incident_id>/resolve")
+    def resolve_incident(incident_id):
+        return {"data": service.resolve(g.user, incident_id, read_body()).to_dict()}
 
+    return app

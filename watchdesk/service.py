@@ -54,3 +54,21 @@ class IncidentService:
         self.repository.save(updated)
         return updated
 
+    def resolve(self, user: User, incident_id: str, data: dict):
+        user.require_writer()
+        current = self.get(user, incident_id)
+        if current.status == "resolved":
+            raise ApiError(409, "Incident is already resolved")
+        note = data.get("resolution_note")
+        if not isinstance(note, str) or not note.strip():
+            raise ApiError(400, "resolution_note must be non-empty text")
+        note = note.strip()
+        if len(note) >= 200:
+            raise ApiError(400, "resolution_note must be at most 200 characters")
+        updated = replace(
+            current,
+            status="resolved",
+            resolution_note=note,
+            resolved_by=data.get("resolved_by", user.id),
+        )
+        return updated
